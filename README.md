@@ -1,56 +1,80 @@
 # Cost-Aware AI System — Adaptive LLM Router
 
-This repo is a **cost-aware AI system** that routes prompts to the most cost-efficient model while balancing **quality**, **latency**, and **budget**. It emphasizes business outcomes like monthly spend tracking and savings vs. a baseline model.
+This repository now ships a production-style **Cost-Aware AI System** that routes prompts between:
 
-## What it is
+- **CHEAP_TIER**: the from-scratch local GPT model in this repo.
+- **QUALITY_TIER**: OpenAI Responses API for high-quality inference.
 
-**Adaptive LLM Router**
-- Uses high-quality (expensive) models only when needed.
-- Falls back to cheaper models for low-complexity requests.
-- Tracks monthly spend and estimated savings vs. a baseline.
+The router makes decisions using **max_cost_usd**, **max_latency_ms**, **min_quality**, and the **cheap model’s uncertainty**. It only escalates to OpenAI when required and always returns detailed routing metadata.
 
-## Why it matters
-Hiring managers care about **budget impact**. This system is designed to show how you:
-- Optimize LLM calls for cost and latency.
-- Build decision logic that maps directly to real GenAI systems.
-- Track savings and budget usage over time.
+## What’s Included
 
-## Core components
+- **`cost_aware_router/` package** with CLI + FastAPI server.
+- **Exact prompt caching** using SQLite.
+- **Routing policy** based on prompt complexity and cheap-model uncertainty.
+- **Quality proxy scoring** (JSON validity, constraints, repetition penalty, structured output bonus).
+- **Evaluation harness** comparing cheap-only, openai-only, and routed runs.
+- **Pricing configuration** for cost estimation.
 
-- **Model Router:** Chooses the best model given cost, latency, and quality constraints.
-- **Cost Metrics:** Records per-call usage and monthly spend.
-- **Prompt Scoring:** Estimates complexity to determine the minimum viable model.
+## How to Run
 
-## Quick start
+### 1) Set your OpenAI key
 
 ```bash
-python scripts/adaptive_router_demo.py
+export OPENAI_API_KEY=YOUR_KEY_HERE
 ```
 
-### Example output
-```
-Prompt: Summarize last week's support tickets into three bullet points.
--> Routed to local-7b | cost $0.0005 | latency 350ms
+### 2) CLI Usage
 
-Prompt: Design a multi-step rollout plan and analyze trade-offs for risk mitigation.
--> Routed to gpt-4-class | cost $0.0108 | latency 1200ms
-
-Total spend: 0.01 USD | Savings vs gpt-4-class: 0.01 USD
+```bash
+python -m cost_aware_router \
+  --prompt "Summarize the benefits of test-driven development." \
+  --min-quality 0.6 \
+  --max-cost-usd 0.02
 ```
 
-## Implementation notes
+### 3) FastAPI Server
 
-- **Routing logic** lives in `src/cost_aware_router.py`.
-- **Demo flow** lives in `scripts/adaptive_router_demo.py`.
+```bash
+uvicorn cost_aware_router.api.main:app --host 0.0.0.0 --port 8000
+```
 
-### Extend it
+Example request:
 
-You can expand this into a production-grade router by adding:
-- Model availability checks and retries.
-- Real token counting using a tokenizer.
-- Latency percentiles and throughput metrics.
-- A live dashboard for spend tracking.
+```bash
+curl -X POST http://localhost:8000/generate \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt": "Return JSON with keys: summary, risks", "min_quality": 0.7}'
+```
 
----
+### 4) Evaluation Harness
 
-If you want to plug in real APIs, swap the demo models in `scripts/adaptive_router_demo.py` with your provider-specific specs and cost rates.
+```bash
+python -m cost_aware_router.eval.bench
+```
+
+## Configuration
+
+Defaults live in `cost_aware_router/configs/default.yaml` and include:
+
+- Cheap model tokenizer + checkpoint paths.
+- OpenAI model name (default `gpt-4o-mini`).
+- Routing thresholds and cache path.
+
+## Training the Local Model
+
+See [`docs/training.md`](docs/training.md) for training and evaluation instructions.
+
+## Outputs
+
+Each generation returns:
+
+- `text`
+- `chosen_model`: `cheap` or `openai`
+- `tokens_in`, `tokens_out`
+- `latency_ms`
+- `estimated_cost_usd`
+- `quality_proxy` (0..1)
+- `route_reason`
+- `cache_hit`
+- `saved_cost_usd`

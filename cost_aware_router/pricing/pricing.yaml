@@ -1,0 +1,7 @@
+cheap:
+  input_per_1k: 0.0001
+  output_per_1k: 0.0002
+
+openai:
+  input_per_1k: 0.003
+  output_per_1k: 0.006

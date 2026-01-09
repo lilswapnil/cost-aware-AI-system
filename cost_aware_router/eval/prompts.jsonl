@@ -1,0 +1,3 @@
+{"prompt": "Summarize the benefits of test-driven development in 3 bullet points.", "min_quality": 0.5}
+{"prompt": "Return JSON with keys: title, summary, risks. Analyze the architecture trade-offs for a streaming pipeline.", "min_quality": 0.7}
+{"prompt": "Write a short product description (max 40 words) for an AI router.", "min_quality": 0.6}
