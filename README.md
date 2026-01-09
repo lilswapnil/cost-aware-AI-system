@@ -1,96 +1,56 @@
-# Cost-Aware LLM Routing System
+# Cost-Aware AI System — Adaptive LLM Router
 
-## What it does
+This repo is a **cost-aware AI system** that routes prompts to the most cost-efficient model while balancing **quality**, **latency**, and **budget**. It emphasizes business outcomes like monthly spend tracking and savings vs. a baseline model.
 
-**Cost-aware routing for LLMs:**
-- Routes each prompt to the optimal model (cheap or high-quality) based on complexity, cost, and SLA constraints.
-- Tracks and reports cost, latency, and quality retention for every request.
-- Delivers measurable savings and SLA compliance for real-world GenAI use cases.
+## What it is
 
-## Architecture
+**Adaptive LLM Router**
+- Uses high-quality (expensive) models only when needed.
+- Falls back to cheaper models for low-complexity requests.
+- Tracks monthly spend and estimated savings vs. a baseline.
 
-```
-┌────────────┐      ┌──────────────┐      ┌─────────────┐
-│  User/API  ├─────►  Router Core  ├─────►  Model Pool  │
-└────────────┘      └──────────────┘      └─────────────┘
-				│                  │                    │
-				▼                  ▼                    ▼
-	 Prompt scoring   Cost/quality/latency   CHEAP_TIER, QUALITY_TIER
-	 + SLA checks     estimation            (configurable)
-```
+## Why it matters
+Hiring managers care about **budget impact**. This system is designed to show how you:
+- Optimize LLM calls for cost and latency.
+- Build decision logic that maps directly to real GenAI systems.
+- Track savings and budget usage over time.
 
-## Metrics
+## Core components
 
-| Metric            | Description                        | Example Value |
-|-------------------|------------------------------------|--------------|
-| Cost per request  | $ spent per generation             | $0.0005      |
-| SLA compliance    | % within cost/latency budget       | 98%          |
-| Quality retention | % tasks matching baseline quality  | 92%          |
-| $ Saved           | Savings vs. always using best      | $0.80 / 1.00 |
+- **Model Router:** Chooses the best model given cost, latency, and quality constraints.
+- **Cost Metrics:** Records per-call usage and monthly spend.
+- **Prompt Scoring:** Estimates complexity to determine the minimum viable model.
 
-## Docker Deployment
-
-You can run the API in a containerized environment using Docker:
-
-### Build the Docker image
-```bash
-docker build -t cost-aware-router .
-```
-
-### Run the container
-```bash
-docker run -p 5000:5000 --env-file .env cost-aware-router
-```
-
-The API will be available at http://localhost:5000.
-
-If you have Docker Compose, you can also use:
-```bash
-docker compose up --build
-```
-
-
-## How to run (CLI)
-
-```bash
-python -m cost_aware_router --prompt "Return a JSON object with fields 'name' and 'age' for Alice, age 30."
-```
-
-Or run the demo:
+## Quick start
 
 ```bash
 python scripts/adaptive_router_demo.py
 ```
 
-## Evaluation
+### Example output
+```
+Prompt: Summarize last week's support tickets into three bullet points.
+-> Routed to local-7b | cost $0.0005 | latency 350ms
 
-- Run the evaluation harness:
-	```bash
-	python eval/bench.py
-	```
-- Prompts and tasks in `eval/prompts.jsonl` (JSON, code, summarization)
-- Metrics: cost, SLA, quality retention, and $ saved (see printed results)
+Prompt: Design a multi-step rollout plan and analyze trade-offs for risk mitigation.
+-> Routed to gpt-4-class | cost $0.0108 | latency 1200ms
 
-## Training (original work)
+Total spend: 0.01 USD | Savings vs gpt-4-class: 0.01 USD
+```
 
-- Model training scripts and configs are in `scripts/` and `configs/`
-- Tokenizer and data prep: `scripts/train_tokenizer.py`, `scripts/prepare_data.py`
-- Model code: `src/model.py`, training: `src/train.py`
-- You can train your own CHEAP_TIER or QUALITY_TIER models and update `models/registry.yaml`
+## Implementation notes
 
-## Supported Models
+- **Routing logic** lives in `src/cost_aware_router.py`.
+- **Demo flow** lives in `scripts/adaptive_router_demo.py`.
 
-The router supports multiple models for cost/quality/latency tradeoff and comparison:
+### Extend it
 
-- **from_scratch_125m** — Small, fast, from-scratch model (125M params)
-- **teacher_gpt2_large** — Larger, higher-quality teacher model (e.g., GPT-2 Large)
-- **gpt-3.5-turbo** — OpenAI GPT-3.5 Turbo (API)
-- **gpt-4** — OpenAI GPT-4 (API)
-- **llama-2-70b** — Meta Llama-2 70B (local or API)
-- **mistral-8x7b** — Mistral 8x7B (local or API)
-
-You can easily add or adjust models in `core/router.py` and `models/registry.yaml`.
+You can expand this into a production-grade router by adding:
+- Model availability checks and retries.
+- Real token counting using a tokenizer.
+- Latency percentiles and throughput metrics.
+- A live dashboard for spend tracking.
 
 ---
 
-**This system is designed to impress hiring managers and recruiters by focusing on measurable business value, not just ML training.**
+If you want to plug in real APIs, swap the demo models in `scripts/adaptive_router_demo.py` with your provider-specific specs and cost rates.

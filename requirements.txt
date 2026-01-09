@@ -2,4 +2,12 @@ torch>=2.2
 sentencepiece>=0.1.99
 numpy>=1.26
 tqdm>=4.66
+<<<<<<< HEAD
 flask>=2.3
+=======
+fastapi>=0.110
+pydantic>=2.6
+pyyaml>=6.0
+openai>=1.30
+uvicorn>=0.29
+>>>>>>> origin/codex/transform-repository-into-cost-aware-ai-system
