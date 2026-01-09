@@ -2,3 +2,4 @@ torch>=2.2
 sentencepiece>=0.1.99
 numpy>=1.26
 tqdm>=4.66
+flask>=2.3

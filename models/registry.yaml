@@ -1,0 +1,45 @@
+# Model registry for cost-aware router
+# Define model tiers, context length, latency, and cost per token
+
+
+CHEAP_TIER:
+  name: "from_scratch_125m"
+  context_length: 1024
+  expected_latency_ms: 100
+  cost_per_token_usd: 0.00001
+  description: "Small, fast, from-scratch model (125M params)"
+
+QUALITY_TIER:
+  name: "teacher_gpt2_large"
+  context_length: 1024
+  expected_latency_ms: 400
+  cost_per_token_usd: 0.0001
+  description: "Larger, higher-quality teacher model (e.g., GPT-2 Large via transformers)"
+
+GPT_3_5:
+  name: "gpt-3.5-turbo"
+  context_length: 4096
+  expected_latency_ms: 600
+  cost_per_token_usd: 0.002
+  description: "OpenAI GPT-3.5 Turbo (API)"
+
+GPT_4:
+  name: "gpt-4"
+  context_length: 8192
+  expected_latency_ms: 1200
+  cost_per_token_usd: 0.03
+  description: "OpenAI GPT-4 (API)"
+
+LLAMA_2:
+  name: "llama-2-70b"
+  context_length: 4096
+  expected_latency_ms: 800
+  cost_per_token_usd: 0.001
+  description: "Meta Llama-2 70B (local or API)"
+
+MISTRAL:
+  name: "mistral-8x7b"
+  context_length: 32000
+  expected_latency_ms: 500
+  cost_per_token_usd: 0.002
+  description: "Mistral 8x7B (local or API)"
